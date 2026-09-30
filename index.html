@@ -118,7 +118,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 @media (hover:hover) and (pointer:fine){.pair,.pair *{cursor:none!important}}
 
 /* 4. видео с текстом */
-.vid{position:relative;height:150vh}
+.vid{position:relative;height:125vh}
 .vid__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#000;color:#fff}
 .vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) contrast(1.05)}
 .vid__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,.5))}
@@ -152,8 +152,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 @media (max-width:760px){.lc{flex:0 0 72vw;height:66vh;scroll-snap-align:center}.lane{padding-top:clamp(90px,24vw,130px)}}
 
 /* 5b. парящие 3D-карточки */
-.fly{position:relative;height:420vh}
-.fly__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
+.fly{position:relative;height:100vh;height:100svh}
+.fly__pin{position:relative;height:100%;overflow:hidden;background:var(--bg);touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+.fly__pin.drag{cursor:grabbing}
+.fly__hint{position:absolute;left:var(--pad);right:var(--pad);bottom:calc(env(safe-area-inset-bottom,0px) + 40px);z-index:6;color:var(--mut);text-align:center}
+.fly__bar{position:absolute;left:var(--pad);right:var(--pad);bottom:calc(env(safe-area-inset-bottom,0px) + 28px);z-index:6;height:2px;background:var(--line)}
+.fly__bar i{position:absolute;left:0;top:0;height:100%;width:8%;background:var(--red)}
 .fly__stage{position:absolute;inset:0;perspective:1000px;perspective-origin:50% 45%}
 .fc{position:absolute;left:50%;top:50%;width:clamp(150px,19vw,290px);aspect-ratio:3/4;margin:calc(clamp(150px,19vw,290px)*-.67) 0 0 calc(clamp(150px,19vw,290px)*-.5);background:var(--card);will-change:transform,opacity;backface-visibility:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}
 .fc img{width:100%;height:100%;object-fit:cover}
@@ -161,6 +165,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .fly__big{position:absolute;left:var(--pad);right:var(--pad);top:50%;display:flex;justify-content:space-between;align-items:center;transform:translateY(-50%);z-index:0;pointer-events:none;font-size:clamp(56px,14vw,240px);color:var(--fg)}
 .fly__stage{z-index:1}
 .fly__c{position:absolute;left:var(--pad);top:calc(env(safe-area-inset-top,0px) + 78px);z-index:6}
+
 
 /* 6. плавающая надпись */
 .brand{position:relative;height:120vh;height:120svh;overflow:hidden;display:grid;place-items:center;margin-top:clamp(60px,10vw,140px)}
@@ -171,7 +176,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .brand__cap{position:absolute;left:var(--pad);bottom:24px;z-index:4;max-width:min(360px,70vw);color:var(--mut)}
 
 /* 7. цветок с видео */
-.film{position:relative;height:270vh}
+.film{position:relative;height:200vh}
 .film__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
 .film__mask{position:absolute;inset:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:50% 50%;mask-position:50% 50%}
 .film__mask video{width:100%;height:100%;object-fit:cover}
@@ -300,6 +305,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
     <div class="vid__n fly__c" id="flyC">05. Букеты 01 / 12</div>
     <div class="fly__stage" id="flyStage"></div>
     <div class="h fly__big" aria-hidden="true"><span>Букеты</span><span>24—26</span></div>
+    <div class="mono fly__hint">← Тяните карточки мышью или листайте пальцем →</div>
+    <div class="fly__bar"><i id="flyBar"></i></div>
   </div>
 </section>
 
@@ -498,8 +505,9 @@ FLY.forEach(function(f,i){
   flyStage.appendChild(d); flyEls.push(d);
 });
 var flyPos=[]; (function(){var r=rnd(7);for(var i=0;i<N;i++){var a=i*2.4;flyPos.push([Math.cos(a)*(20+r()*10),Math.sin(a*1.3)*(14+r()*8),(r()-.5)*14])}})();
+var flyCur=0, flyT=0;
 function updFly(){
-  var p=prog($('#fly')), cur=p*(N-1), W=innerWidth, H=innerHeight;
+  var cur=flyCur, W=innerWidth, H=innerHeight;
   flyEls.forEach(function(el,i){
     var d=i-cur;
     if(d<-.6||d>7){el.style.opacity=0;el.style.visibility='hidden';return}
@@ -507,8 +515,28 @@ function updFly(){
     el.style.visibility='visible'; el.style.opacity=o;
     el.style.transform='translate3d('+(flyPos[i][0]*W/100)+'px,'+(flyPos[i][1]*H/100)+'px,'+z+'px) rotateZ('+flyPos[i][2]+'deg) rotateY('+(flyPos[i][0]*-.35)+'deg)';
   });
+  $('#flyBar').style.left=(cur/(N-1)*92)+'%';
   $('#flyC').textContent='05. Букеты '+String(clamp(Math.round(cur)+1,1,N)).padStart(2,'0')+' / '+N;
 }
+
+(function(){
+  var pin=$('.fly__pin'), down=false, sx=0, sy=0, st=0, lx=0, vx=0, cap=false, id=null, PX=170;
+  pin.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    down=true;cap=false;sx=lx=e.clientX;sy=e.clientY;st=flyT;vx=0;id=e.pointerId;
+  });
+  addEventListener('pointermove',function(e){
+    if(!down||e.pointerId!==id)return;
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    if(!cap){ if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){cap=true;pin.classList.add('drag');try{pin.setPointerCapture(id)}catch(_){}} else return }
+    vx=e.clientX-lx; lx=e.clientX; flyT=clamp(st-dx/PX,0,N-1);
+  });
+  function up(){ if(!down)return; down=false; pin.classList.remove('drag'); if(cap)flyT=clamp(Math.round(flyT-vx/PX*6),0,N-1) }
+  addEventListener('pointerup',up); addEventListener('pointercancel',up);
+  pin.addEventListener('wheel',function(e){
+    if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();flyT=clamp(flyT+e.deltaX/260,0,N-1);clearTimeout(pin._w);pin._w=setTimeout(function(){flyT=Math.round(flyT)},160)}
+  },{passive:false});
+})();
 
 /* 6. плавающая надпись */
 var bx=0,by=0,btx=0,bty=0,bfx=0,bfy=0,ftx=0,fty=0,brandEl=$('#brand'), brandT=$('#brandT'), brandF=$('#brandF');
@@ -578,6 +606,7 @@ fitAll(); addEventListener('resize',fitAll);
 /* общий цикл */
 function frame(now){
   var t=(now-t0)/1000;
+  if(Math.abs(flyT-flyCur)>.001){flyCur+=(flyT-flyCur)*.14;updFly()}
   if(tulipOn){tx=lerp(tx,mx,.28);ty=lerp(ty,my,.28);tulip.style.transform='translate3d('+tx+'px,'+ty+'px,0)'}
   var idle=reduce?0:1, ax=(!fine?Math.sin(t*.5)*120:0)*idle, ay=(!fine?Math.cos(t*.4)*50:0)*idle;
   bx=lerp(bx,btx+(fine?0:ax),.028); by=lerp(by,bty+(fine?0:ay),.028); bfx=lerp(bfx,ftx,.04); bfy=lerp(bfy,fty,.04);
@@ -589,7 +618,7 @@ requestAnimationFrame(frame);
 
 function onScroll(){
   if(!fine&&!flipped){
-    var cr=card.getBoundingClientRect(), from=innerHeight*.9, to=innerHeight/2-cr.height/2;
+    var cr=card.getBoundingClientRect(), from=innerHeight-cr.height, to=innerHeight/2-cr.height/2; if(from<to+120)from=to+120;
     var k=clamp((from-cr.top)/Math.max(1,from-to),0,1), ti=card.querySelector('.top'), si=card.querySelector('.side');
     ti.style.opacity=k; ti.style.transform='scale('+(1.06-.06*k)+')'; si.style.opacity=1-k;
   }
