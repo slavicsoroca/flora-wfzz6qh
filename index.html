@@ -49,7 +49,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .hd nav{display:flex;gap:clamp(14px,2.4vw,40px);font-family:var(--f-disp);font-size:20px;text-transform:uppercase}
 .hd .logo{font-family:var(--f-disp);font-size:clamp(30px,4vw,48px);line-height:.9;letter-spacing:.02em}
 .hd .r{justify-self:end;display:flex;gap:clamp(14px,2.4vw,40px);font-family:var(--f-disp);font-size:20px;text-transform:uppercase}
-@media (max-width:640px){.hd nav a:not(:first-child){display:none}.hd .r a{display:none}}
+@media (max-width:640px){.hd nav a:not(:first-child){display:none}.hd .r a:first-child{display:none}.hd nav,.hd .r{font-size:17px}}
 
 /* 1. первый экран */
 .hero{height:100vh;height:100svh;position:relative}
@@ -70,7 +70,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .hero__cap{position:absolute;left:var(--pad);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:3;color:var(--ink-on-photo)}
 .hero__n{position:absolute;right:var(--pad);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:3;color:var(--ink-on-photo)}
 
-@media (max-width:640px){.hero__t{font-size:24vw;top:16vh}.hero__r{top:calc(16vh + 24vw);font-size:8.4vw;text-align:left;left:var(--pad);right:auto}.hero__w{font-size:13vw}.fly__big{flex-direction:column;align-items:flex-start;gap:0;font-size:26vw}}
+@media (max-width:640px){.hero__t{font-size:19vw;top:16vh}.hero__r{top:calc(16vh + 24vw);font-size:8.4vw;text-align:left;left:var(--pad);right:auto}.hero__w{font-size:10vw}.hero__n{display:none}.vid .vid__p{left:var(--pad);right:auto;text-align:left;max-width:82vw;bottom:calc(8vh + 20vw)}.fly .fly__big{flex-direction:column;align-items:flex-start;gap:0;font-size:26vw}.hero__cap{right:var(--pad);white-space:normal}}
 
 /* 2. тезис */
 .say{padding:clamp(90px,16vw,240px) var(--pad);max-width:1500px;margin:0 auto}
@@ -98,6 +98,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .face .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .7s ease,transform 1.2s cubic-bezier(.2,.7,.2,1)}
 .face .ph .top{opacity:0;transform:scale(1.06)}
 .card.peek .ph .top{opacity:1;transform:none}
+.card.scrub .ph img{transition:none}
 .card.peek .ph .side{opacity:0}
 .face .meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 16px 4px;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;font-size:15px}
 .face .sub{padding:0 16px 14px;color:var(--mut)}
@@ -116,7 +117,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 @media (hover:hover) and (pointer:fine){.pair,.pair *{cursor:none!important}}
 
 /* 4. видео с текстом */
-.vid{position:relative;height:240vh}
+.vid{position:relative;height:150vh}
 .vid__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#000;color:#fff}
 .vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) contrast(1.05)}
 .vid__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,.5))}
@@ -143,6 +144,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .lc h3{position:absolute;left:clamp(10px,1.5vw,22px);bottom:clamp(10px,1.5vw,22px);margin:0;writing-mode:vertical-rl;transform:rotate(180deg);font-size:clamp(38px,5vw,78px);color:#fff;text-shadow:0 0 28px rgba(0,0,0,.35);line-height:.85;max-height:calc(100% - 20px)}
 .lc .k{position:absolute;right:16px;bottom:14px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.4);font-family:var(--f-disp);font-size:24px}
 
+@media (max-width:760px),(hover:none){
+  .lane{height:auto}
+  .lane__pin{position:relative;height:auto;overflow:visible;padding:clamp(90px,24vw,130px) 0 40px;gap:18px}
+  .lane__track{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;transform:none!important;scrollbar-width:none;overscroll-behavior-x:contain}
+  .lane__track::-webkit-scrollbar{display:none}
+  .lc{flex:0 0 72vw;height:66vh;scroll-snap-align:center}
+  .lane__hint{display:block}
+}
+.lane__hint{display:none;padding:0 var(--pad);color:var(--mut)}
+
 /* 5b. парящие 3D-карточки */
 .fly{position:relative;height:420vh}
 .fly__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
@@ -163,7 +174,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .brand__cap{position:absolute;left:var(--pad);bottom:24px;z-index:4;max-width:min(360px,70vw);color:var(--mut)}
 
 /* 7. цветок с видео */
-.film{position:relative;height:360vh}
+.film{position:relative;height:270vh}
 .film__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
 .film__mask{position:absolute;inset:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:50% 50%;mask-position:50% 50%}
 .film__mask video{width:100%;height:100%;object-fit:cover}
@@ -280,6 +291,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
       <a class="lc" href="#"><img data-a="assets/photos/bouquet-11.jpg" alt="" loading="lazy"><h3 class="h">Ранункулюсы</h3><span class="k">[ 6 ]</span></a>
       <a class="lc" href="#"><img data-a="assets/photos/bouquet-03.jpg" alt="" loading="lazy"><h3 class="h">Тёмные</h3><span class="k">[ 4 ]</span></a>
     </div>
+    <div class="mono lane__hint">← Листайте пальцем →</div>
   </div>
 </section>
 
@@ -421,9 +433,9 @@ var cartN=0; $('#add').addEventListener('click',function(e){e.stopPropagation();
 if(fine){
   card.addEventListener('mouseenter',function(){if(!flipped)card.classList.add('peek')});
   card.addEventListener('mouseleave',function(){card.classList.remove('peek')});
-}else if(!reduce){
-  setInterval(function(){if(!flipped)card.classList.toggle('peek')},2600);
-  $('#cardHint').textContent='Кадры меняются сами · нажмите: состав';
+}else{
+  card.classList.add('scrub');
+  $('#cardHint').textContent='Прокрутите: вид сверху · нажмите: состав';
 }
 var tulip=$('#tulip'), mx=0,my=0,tx=0,ty=0,tulipOn=false;
 if(fine){
@@ -453,7 +465,9 @@ function updVid(){
 
 /* 5a. горизонтальная лента */
 var laneEl=$('#lane'), laneTrack=$('#laneTrack');
+var laneNative=matchMedia('(max-width:760px),(hover:none)');
 function updLane(){
+  if(laneNative.matches){laneTrack.style.transform='';return}
   var p=prog(laneEl), max=Math.max(0,laneTrack.scrollWidth-innerWidth+16);
   laneTrack.style.transform='translate3d('+(-p*max)+'px,0,0)';
 }
@@ -532,6 +546,21 @@ $('#sub').addEventListener('submit',function(e){
   m.textContent=/^\S+@\S+\.\S+$/.test(v)?'Спасибо, вы подписаны':'Введите корректный e-mail';
 });
 
+/* крупные надписи: уменьшать шрифт, если не влезают в экран */
+var FIT=[['.hero__t','.hero__t'],['.hero__w','.hero__w .b'],['.vid__t','.vid__t span'],['.fly__big','.fly__big span'],['.brand__f','.brand__f'],['.hero__r','.hero__r span']];
+function fitAll(){
+  var avail=innerWidth-2*Math.max(16,innerWidth*.03);
+  FIT.forEach(function(f){
+    var host=$(f[0]); if(!host)return; host.style.fontSize='';
+    var w=0; $$(f[1]).forEach(function(e){var r=document.createRange();r.selectNodeContents(e);w=Math.max(w,r.getBoundingClientRect().width)});
+    if(f[0]==='.fly__big'){var sum=0;$$(f[1]).forEach(function(e){var r=document.createRange();r.selectNodeContents(e);sum+=r.getBoundingClientRect().width});if(getComputedStyle(host).flexDirection!=='column')w=sum+20}
+    if(f[0]==='.vid__t'){var sm=$('.vid__t small');w+= (sm?sm.getBoundingClientRect().width:0)+12}
+    if(w>avail){host.style.fontSize=(parseFloat(getComputedStyle(host).fontSize)*avail/w*.97)+'px'}
+  });
+}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitAll);
+fitAll(); addEventListener('resize',fitAll);
+
 /* общий цикл */
 function frame(now){
   var t=(now-t0)/1000;
@@ -545,6 +574,11 @@ function frame(now){
 requestAnimationFrame(frame);
 
 function onScroll(){
+  if(!fine&&!flipped){
+    var cr=card.getBoundingClientRect(), from=innerHeight*.9, to=innerHeight/2-cr.height/2;
+    var k=clamp((from-cr.top)/Math.max(1,from-to),0,1), ti=card.querySelector('.top'), si=card.querySelector('.side');
+    ti.style.opacity=k; ti.style.transform='scale('+(1.06-.06*k)+')'; si.style.opacity=1-k;
+  }
   updSay(); updVid(); updLane(); updFly(); updFilm();
 }
 addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',onScroll);
