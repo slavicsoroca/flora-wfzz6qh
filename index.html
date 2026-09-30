@@ -136,24 +136,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .opt__mark{display:inline-block;border:1px solid var(--fg);padding:5px 10px;margin:0 var(--pad) 18px}
 
 /* 5a. горизонтальная лента с вертикальными подписями */
-.lane{position:relative;height:340vh}
-.lane__pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:24px;padding-top:70px}
-.lane__track{display:flex;gap:clamp(10px,1.4vw,20px);padding:0 var(--pad);will-change:transform}
-.lc{position:relative;flex:0 0 clamp(240px,30vw,470px);height:min(68vh,760px);background:var(--card);overflow:hidden}
-.lc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.lane{position:relative;padding:clamp(90px,10vw,140px) 0 40px}
+.lane__pin{display:flex;flex-direction:column;gap:22px}
+.lane__track{display:flex;gap:clamp(10px,1.4vw,20px);padding:0 var(--pad);overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab;user-select:none;-webkit-user-select:none}
+.lane__track::-webkit-scrollbar{display:none}
+.lane__track.drag{cursor:grabbing;scroll-snap-type:none}
+.lc{position:relative;flex:0 0 clamp(240px,30vw,470px);height:min(68vh,760px);background:var(--card);overflow:hidden;scroll-snap-align:start;scroll-margin-left:var(--pad)}
+.lc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1);pointer-events:none;-webkit-user-drag:none}
 .lc:hover img{transform:scale(1.05)}
 .lc h3{position:absolute;left:clamp(10px,1.5vw,22px);bottom:clamp(10px,1.5vw,22px);margin:0;writing-mode:vertical-rl;transform:rotate(180deg);font-size:clamp(38px,5vw,78px);color:#fff;text-shadow:0 0 28px rgba(0,0,0,.35);line-height:.85;max-height:calc(100% - 20px)}
 .lc .k{position:absolute;right:16px;bottom:14px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.4);font-family:var(--f-disp);font-size:24px}
-
-@media (max-width:760px),(hover:none){
-  .lane{height:auto}
-  .lane__pin{position:relative;height:auto;overflow:visible;padding:clamp(90px,24vw,130px) 0 40px;gap:18px}
-  .lane__track{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;transform:none!important;scrollbar-width:none;overscroll-behavior-x:contain}
-  .lane__track::-webkit-scrollbar{display:none}
-  .lc{flex:0 0 72vw;height:66vh;scroll-snap-align:center}
-  .lane__hint{display:block}
-}
-.lane__hint{display:none;padding:0 var(--pad);color:var(--mut)}
+.lane__bar{margin:0 var(--pad);height:2px;background:var(--line);position:relative}
+.lane__bar i{position:absolute;left:0;top:0;height:100%;width:20%;background:var(--red)}
+.lane__hint{padding:0 var(--pad);color:var(--mut)}
+@media (max-width:760px){.lc{flex:0 0 72vw;height:66vh;scroll-snap-align:center}.lane{padding-top:clamp(90px,24vw,130px)}}
 
 /* 5b. парящие 3D-карточки */
 .fly{position:relative;height:420vh}
@@ -292,7 +288,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
       <a class="lc" href="#"><img data-a="assets/photos/bouquet-11.jpg" alt="" loading="lazy"><h3 class="h">Ранункулюсы</h3><span class="k">[ 6 ]</span></a>
       <a class="lc" href="#"><img data-a="assets/photos/bouquet-03.jpg" alt="" loading="lazy"><h3 class="h">Тёмные</h3><span class="k">[ 4 ]</span></a>
     </div>
-    <div class="mono lane__hint">← Листайте пальцем →</div>
+    <div class="lane__bar"><i id="laneBar"></i></div>
+    <div class="mono lane__hint" id="laneHint">← Тяните ленту мышью или листайте пальцем →</div>
   </div>
 </section>
 
@@ -465,13 +462,29 @@ function updVid(){
 }
 
 /* 5a. горизонтальная лента */
-var laneEl=$('#lane'), laneTrack=$('#laneTrack');
-var laneNative=matchMedia('(max-width:760px),(hover:none)');
+var laneTrack=$('#laneTrack'), laneBar=$('#laneBar');
 function updLane(){
-  if(laneNative.matches){laneTrack.style.transform='';return}
-  var p=prog(laneEl), max=Math.max(0,laneTrack.scrollWidth-innerWidth+16);
-  laneTrack.style.transform='translate3d('+(-p*max)+'px,0,0)';
+  var max=Math.max(1,laneTrack.scrollWidth-laneTrack.clientWidth), p=laneTrack.scrollLeft/max, w=Math.max(12,laneTrack.clientWidth/laneTrack.scrollWidth*100);
+  laneBar.style.width=w+'%'; laneBar.style.left=(p*(100-w))+'%';
 }
+laneTrack.addEventListener('scroll',updLane,{passive:true});
+(function(){
+  var down=false,sx=0,sl=0,moved=0,vx=0,lx=0,raf=0;
+  laneTrack.addEventListener('pointerdown',function(e){
+    if(e.pointerType!=='mouse'||e.button!==0)return;
+    down=true;moved=0;sx=lx=e.clientX;sl=laneTrack.scrollLeft;vx=0;cancelAnimationFrame(raf);laneTrack.classList.add('drag');
+  });
+  addEventListener('pointermove',function(e){
+    if(!down)return; var dx=e.clientX-sx; moved=Math.max(moved,Math.abs(dx)); vx=e.clientX-lx; lx=e.clientX; laneTrack.scrollLeft=sl-dx;
+  });
+  function up(){
+    if(!down)return; down=false;
+    (function glide(){vx*=.94; if(Math.abs(vx)>.4){laneTrack.scrollLeft-=vx;raf=requestAnimationFrame(glide)}else laneTrack.classList.remove('drag')})();
+  }
+  addEventListener('pointerup',up); addEventListener('pointercancel',up);
+  laneTrack.addEventListener('click',function(e){if(moved>5){e.preventDefault();e.stopPropagation()}},true);
+  laneTrack.addEventListener('dragstart',function(e){e.preventDefault()});
+})();
 
 /* 5б. парящие 3D-карточки */
 var FLY=[
